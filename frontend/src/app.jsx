@@ -4,6 +4,50 @@ import "./App.css";
 
 const socket = io("http://localhost:8010");
 function App() {
+  const [username, setUsername] = useState("");
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [isJoined, setIsJoined] = useState(false);
+
+  useEffect(() => {
+    socket.on("receive_message", (data) => {
+      console.log("msg dtaa");
+      setMessages((prevMessages) => [...prevMessages, data]);
+      console.log(messages);
+    });
+    socket.on("users", (updatedUsers) => {
+      setUsers(updatedUsers);
+    });
+
+    return () => {
+      socket.off("receive_message");
+      socket.off("users");
+    };
+  }, []);
+
+  const handleJoin = () => {
+    if (username.length >= 0) {
+      socket.emit("join", username);
+      setIsJoined(true);
+    } else {
+      alert("first enter your name");
+    }
+  };
+
+  const sendMessage = () => {
+    console.log("first");
+    if (message) {
+      console.log(message);
+      const data = { username, message };
+      console.log(data);
+      socket.emit("send_message", data);
+      console.log("messages", messages);
+      // setMessages((prevMessages) => [...prevMessages, data]);
+      setMessage("");
+    }
+  };
+
   return (
     <div className="app">
       {!isJoined ? (
